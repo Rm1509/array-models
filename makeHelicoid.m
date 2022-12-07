@@ -1,9 +1,7 @@
 function handle1 = makeHelicoid(ar, PITCHNO, thk, homefol, saveon, rad, einterval )
 %                   makeHelicoid(3,  1,   [2,2,3], homefol, 1,  100, 0.05)
 % ar=3; PITCHNO=1; thk = [2,2,3]; saveon=0;  rad = 100; einterval=0.05; homefol='C:\Users\Rox\OneDrive - University of Bristol\Documents\lumericalbeb\221201 multi tests\matfiles'; 
-% 
 
-% 
 % this function makes a helicoid / helix shape, plots graphs and then saves
 % an stl object to the homefol. It was developed from the notes made in plottingHelicoid.m
 
@@ -17,14 +15,15 @@ function handle1 = makeHelicoid(ar, PITCHNO, thk, homefol, saveon, rad, einterva
     % einterval is the resolution of the object mesh grid, or 'resolution' % (OPTIONAL)
 
 % -----------------------------------------------------------------------------------------
-%% 1. hard coded values
+
+
+% 1. hard coded and default values
     R = 1.2; % this is the size of the meshgrid
     RADIUS = 1; % this is the unit (unscaled size for the radius)
     dend = [0,0,0]; % defining the end of the shape
 
-%   1.5 default values
-if nargin==6; einterval=0.05; end
-if nargin==5; einterval=0.05; rad=100;end
+    if nargin==6; einterval=0.05; end
+    if nargin==5; einterval=0.05; rad=100;end
 
 % 2. setting the dimension scales for the object
     xsc = rad;
@@ -41,42 +40,35 @@ if nargin==5; einterval=0.05; rad=100;end
 
 % 4. make xyz function points for a helix
     hxyz = helicoid(PITCHNO, einterval, RADIUS, px);
-%   n = size (hxyz1,1);
 
 % 5. This function takes a long time. It matches each of the new function points to a point on the grid 
     k = dsearchn(pxyz,hxyz); 
 
-% % % % % % %  6. xxxxxxxxx Figure showing the location of the function in the grid xxxxxxxxxxxxxxxxxx
-% % % % % %     figure; plot3(pxyz(k,1), pxyz(k,2),pxyz(k,3),'o')
-% % % % % % %  xxxxxxxxxxxxxxx                  END FIGURE                          xxxxxxxxxxxxxxxxxx
+%  figure; plot3(pxyz(k,1), pxyz(k,2),pxyz(k,3),'o')%  6. xxxxxxxxx Figure showing the location of the function in the grid x
 
 % 7. This initialises the 4th input to isosurface, ttf, ie. the V of X,Y,Z
     ttf = false(size(px));
     ttf(k) = true;
 
-% % % % % % % %  xxxxxxxxx Here's a figure showing the showing the location of the function in the grid xxxxxxxxxxxxxxxxxx    
-% % % % % % %     figure; isosurface(squeeze(px(1,1:end-dend(1),1))*xsc, squeeze(py(1:end-dend(2),1,1))*ysc, squeeze(pz(1,1,1:end-dend(3)))*zsc,ttf)
-% % % % % % % %  xxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
+%   figure; isosurface(squeeze(px(1,1:end-dend(1),1))*xsc, squeeze(py(1:end-dend(2),1,1))*ysc, squeeze(pz(1,1,1:end-dend(3)))*zsc,ttf) %  Here's a figure showing the showing the location of the function in the grid
 
 % 8. thickens points to 3D
     ttf2 = volumise(ttf, dix, diy, diz);
 
-% % % % % % % % %  xxxxxxxxx Figure showing the isosurface xxxxxxxxxxxxxxxxxx
-% % % % % % % %     figure; isosurface(squeeze(px(1,1:end-dend(1),1))*xsc, squeeze(py(1:end-dend(2),1,1))*ysc, squeeze(pz(1,1,1:end-dend(3)))*zsc,ttf2)
-% % % % % % % % %  xxxxxxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
+%   figure; isosurface(squeeze(px(1,1:end-dend(1),1))*xsc, squeeze(py(1:end-dend(2),1,1))*ysc, squeeze(pz(1,1,1:end-dend(3)))*zsc,ttf2) %   Figure showing the isosurface 
 
 
 % 9. turns shape to x axis and labels it in a figure 
     fvcoords = [squeeze(px(1,1:end-dend(1),1))'*xsc,squeeze(py(1:end-dend(2),1,1))*ysc,squeeze(pz(1,1,1:end-dend(3)))*zsc];
     fvcoords2 = [fvcoords(:,3),fvcoords(:,1), fvcoords(:,2)];
     
-    %  xxxxxxxxx Here's the final shape figure xxxxxxxxxxxxxxxxxx
+                    %  xxxxxxxxx Here's the final shape figure xxxxxxxxxxxxxxxxxx
     figure;  isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
     handle1 = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2])); % attempt to return the surface as an output in handle1
     [f1,v1] = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
 
     xlabel('x'); ylabel('y'); zlabel('z');% xlim([-xsc xsc]*2.1/2) % ylim([-ysc ysc]*2.1/2) % zlim([-zsc zsc]*2.1/2)   
-    %  xxxxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
+                    %  xxxxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
 
 %  10. saving the stl file. 
     if saveon==1
@@ -105,9 +97,9 @@ if nargin==5; einterval=0.05; rad=100;end
 end % end of function
 
 function ttf2 = volumise(ttf, dix, diy, diz)
-
  % 8. this thickens the surface points into a defined volume / defined
  % thickness. It creates ttf2, which is used in the isosurface
+ 
     ttf2 = false(size(ttf));%ttf;
     for p = dix+1: size(ttf,1)
        for q = diy+1:size(ttf,2)
@@ -131,6 +123,8 @@ function ttf2 = volumise(ttf, dix, diy, diz)
 
 end
 function hxyz = helicoid(PITCHNO, einterval, RADIUS, px)
+% this function takes the inputs and makes an array of points that lie on
+% the equation for a 'helicoid'
     t = -PITCHNO*pi/2:einterval:PITCHNO*pi/2; % single pitch
     u= -RADIUS:einterval:RADIUS;
     
