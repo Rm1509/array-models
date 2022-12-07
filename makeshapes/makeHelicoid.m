@@ -39,24 +39,9 @@ if nargin==5; einterval=0.05; rad=100;end
     pxyz = [px(:),py(:),pz(:)];
     reso = RADIUS/einterval;
 
-% 4. make xyz function points
-    t = -PITCHNO*pi:einterval:PITCHNO*pi;
-    t = -PITCHNO*pi/2:einterval:PITCHNO*pi/2; % single pitch
-    u= -RADIUS:einterval:RADIUS;
-    
-    v = nan(size(px));
-    
-    hx = u'*cos(t);
-    hy = u'*sin(t);
-    hz = (1/3.142)*t ;
-    hxyz1 = cat(3, hx, hy,ones(size(hx,1),1)*hz );
-    
-    isbd1 = false(size(hxyz1,1),size(hxyz1,2));
-    isbd1([1 end], :)=true;
-    isbd1(:, [1 end])=true;
-    
-    hxyz = reshape(hxyz1, [],3);
-%     n = size (hxyz1,1);
+% 4. make xyz function points for a helix
+    hxyz = helicoid(PITCHNO, einterval, RADIUS, px);
+%   n = size (hxyz1,1);
 
 % 5. This function takes a long time. It matches each of the new function points to a point on the grid 
     k = dsearchn(pxyz,hxyz); 
@@ -72,6 +57,54 @@ if nargin==5; einterval=0.05; rad=100;end
 % % % % % % % %  xxxxxxxxx Here's a figure showing the showing the location of the function in the grid xxxxxxxxxxxxxxxxxx    
 % % % % % % %     figure; isosurface(squeeze(px(1,1:end-dend(1),1))*xsc, squeeze(py(1:end-dend(2),1,1))*ysc, squeeze(pz(1,1,1:end-dend(3)))*zsc,ttf)
 % % % % % % % %  xxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
+
+% 8. thickens points to 3D
+    ttf2 = volumise(ttf, dix, diy, diz);
+
+% % % % % % % % %  xxxxxxxxx Figure showing the isosurface xxxxxxxxxxxxxxxxxx
+% % % % % % % %     figure; isosurface(squeeze(px(1,1:end-dend(1),1))*xsc, squeeze(py(1:end-dend(2),1,1))*ysc, squeeze(pz(1,1,1:end-dend(3)))*zsc,ttf2)
+% % % % % % % % %  xxxxxxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
+
+
+% 9. turns shape to x axis and labels it in a figure 
+    fvcoords = [squeeze(px(1,1:end-dend(1),1))'*xsc,squeeze(py(1:end-dend(2),1,1))*ysc,squeeze(pz(1,1,1:end-dend(3)))*zsc];
+    fvcoords2 = [fvcoords(:,3),fvcoords(:,1), fvcoords(:,2)];
+    
+    %  xxxxxxxxx Here's the final shape figure xxxxxxxxxxxxxxxxxx
+    figure;  isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
+    handle1 = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2])); % attempt to return the surface as an output in handle1
+    [f1,v1] = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
+
+    xlabel('x'); ylabel('y'); zlabel('z');% xlim([-xsc xsc]*2.1/2) % ylim([-ysc ysc]*2.1/2) % zlim([-zsc zsc]*2.1/2)   
+    %  xxxxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
+
+%  10. saving the stl file. 
+    if saveon==1
+
+    % creates name for the file - numbers are values as identified
+    %     num2str(RADIUS*rad); % radius length
+    %     num2str(PITCHNO*zsc); % this is the pitch
+    %     num2str(reso); % resolution, ie. chunks in one radius
+    %     num2str(t(end)-t(1)/pi); % number of pitches
+    %     num2str(diz*einterval*zsc); % this is the thickness
+    %     num2str((PITCHNO*zsc)/(RADIUS*rad)); % this is the aspect ratio
+        pitchN = round((t(end)-t(1))/pi);
+        twritename = strcat('helicoid1-reso',num2str(reso),'-SZ',num2str(rad),'-N',num2str(pitchN),'-AR',num2str(ar),'-THK',num2str(diz*zsc/reso));
+        twritename(twritename=='.')='_';
+
+% adds time-date stamp in order not to write over subsequent runs
+        totname = DT4filename;
+        twritename=strcat(twritename, totname);
+
+% saves stl file to homefol
+        cd(homefol)
+%         FV1 = triangulation(f1,v1);
+        stlwrite(strcat(twritename,'.stl'), f1,v1);
+    end
+
+end % end of function
+
+function ttf2 = volumise(ttf, dix, diy, diz)
 
  % 8. this thickens the surface points into a defined volume / defined
  % thickness. It creates ttf2, which is used in the isosurface
@@ -96,56 +129,21 @@ if nargin==5; einterval=0.05; rad=100;end
        end
     end
 
-% % % % % % % % %  xxxxxxxxx Figure showing the isosurface xxxxxxxxxxxxxxxxxx
-% % % % % % % %     figure; isosurface(squeeze(px(1,1:end-dend(1),1))*xsc, squeeze(py(1:end-dend(2),1,1))*ysc, squeeze(pz(1,1,1:end-dend(3)))*zsc,ttf2)
-% % % % % % % % %  xxxxxxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
-
-%---------------------------------------------------------------------------
-%% 9. turns shape to x axis and labels it in a figure
-%---------------------------------------------------------------------------
- 
-    fvcoords = [squeeze(px(1,1:end-dend(1),1))'*xsc,squeeze(py(1:end-dend(2),1,1))*ysc,squeeze(pz(1,1,1:end-dend(3)))*zsc];
-    fvcoords2 = [fvcoords(:,3),fvcoords(:,1), fvcoords(:,2)];
+end
+function hxyz = helicoid(PITCHNO, einterval, RADIUS, px)
+    t = -PITCHNO*pi/2:einterval:PITCHNO*pi/2; % single pitch
+    u= -RADIUS:einterval:RADIUS;
     
-    %  xxxxxxxxx Here's the final shape figure xxxxxxxxxxxxxxxxxx
-    figure;  isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
-    handle1 = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2])); % attempt to return the surface as an output in handle1
-    [f1,v1] = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
-
-    xlabel('x')% xlim([-xsc xsc]*2.1/2)
-    ylabel('y')% ylim([-ysc ysc]*2.1/2)
-    zlabel('z')% zlim([-zsc zsc]*2.1/2)
- %  xxxxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
-
-%  10. saving the stl file. 
-    if saveon==1
-
-    % creates name for the file - numbers are values as identified
-    %     num2str(RADIUS*rad); % radius length
-    %     num2str(PITCHNO*zsc); % this is the pitch
-    %     num2str(reso); % resolution, ie. chunks in one radius
-    %     num2str(t(end)-t(1)/pi); % number of pitches
-    %     num2str(diz*einterval*zsc); % this is the thickness
-    %     num2str((PITCHNO*zsc)/(RADIUS*rad)); % this is the aspect ratio
-        pitchN = round((t(end)-t(1))/pi);
-        twritename = strcat('helicoid1-reso',num2str(reso),'-SZ',num2str(rad),'-N',num2str(pitchN),'-AR',num2str(ar),'-THK',num2str(diz*zsc/reso));
-        twritename(twritename=='.')='_';
-
-% adds time-date stamp in order not to write over subsequent runs
-        dtdt=datetime;
-         dty =yyyymmdd(dtdt); dty = num2str(dty);dty= dty(3:end);
-        [h,m,s] = hms(dtdt);
-                hh = sprintf('%02d',h);
-                mm = sprintf('%02d',m);
-                ss = sprintf('%02d',round(s));
-                totname = strcat('_DT',dty,'-',hh,mm,ss);
-        twritename=strcat(twritename, totname);
-
-% saves stl file to homefol
-        cd(homefol)
-        FV1 = triangulation(f1,v1);
-        stlwrite(strcat(twritename,'.stl'), f1,v1);
-    end
-
-end % end of function
+    v = nan(size(px));
     
+    hx = u'*cos(t);
+    hy = u'*sin(t);
+    hz = (1/3.142)*t ;
+    hxyz1 = cat(3, hx, hy,ones(size(hx,1),1)*hz );
+    
+    isbd1 = false(size(hxyz1,1),size(hxyz1,2));
+    isbd1([1 end], :)=true;
+    isbd1(:, [1 end])=true;
+    
+    hxyz = reshape(hxyz1, [],3);
+end
