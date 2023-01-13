@@ -4,30 +4,45 @@ function multiparticle()
 % -	Add a grid of distribution in x-y which the deviation is on - done 
 % -	Neaten up multiparticle so all of these things are inputs and outputs
 % -	Twist the curls round the central corkscrew
+% -	Control the angular orientation within a range
+% -	Allow a range of sizes and a range of lengths
 
 % -	Allow or disallow intersection
-% -	Control the angular orientation within a range
+
 % -	Save these and load them in Lumerical (NB. Radically different sizes!)
 % -	Control size and add these to Lumerical
-% -	Allow a range of sizes and a range of lengths
+
 % -	Use different shapes
 
 %how many shapes wanted
-numsh = 9;
+numsh = 9; % number of particles in square grid
+rotsig =20; % sigma of random rotation around y & z axes independently (deg)
+resize1 = 0.2; % sigma of random particle resize uniform in all 3 dimensions
+locsig = 20; % sigma of particle distribution deviation from grid
+
+ar = 3;
+PITCHNO = 1;
+thk = [2,2,3];
+saveon = [0,1];
+rad = 100;
+einterval=0.05;
+homefol = 'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\230112';
 
 %figure setup
 % figure
 pcol = parula(numsh);
 
 % this is required if you want to save it,  but is not actually important
-homefol = 'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\230112';
 
 %this calls the basic shape, for when the same shape is reproduced multiple
 %times
-eghandle = makeHelicoid(3,  1,   [2,2,3], homefol, 0,  100, 0.05);
+handle1 = makeHelicoid(ar, PITCHNO, thk, homefol, saveon(1), rad, einterval);
+% handle1 = makeHelicoid(3,  1,   [2,2,3], homefol, 0,  100, 0.05);
+% ar=3; PITCHNO=1; thk = [2,2,3]; saveon=0;  rad = 100; einterval=0.05; homefol='C:\Users\Rox\OneDrive - University of Bristol\Documents\lumericalbeb\221201 multi tests\matfiles'; 
+
 close(gcf);
 %how big is the object
-obsz = obsz3(eghandle)
+obsz = obsz3(handle1)
 
 %make an array
 arlen = ceil(sqrt(numsh));
@@ -39,17 +54,27 @@ figure; scatter3(arxm(:), arym(:), arzm(:))
 
 % to make a multiarray, each one is made in this loop
 for i = 1: numsh
-    
+
+%     resizing
+    xmul = 1 +randn(1)*resize1;%.*obsz(1,3);
+    ymul = 1 +randn(1)*resize1;%.*obsz(2,3);
+    zmul = 1 +randn(1)*resize1;%.*obsz(3,3);
+    newvert = handle1.vertices.*repmat([xmul,ymul,zmul],size(handle1.vertices,1), 1);
+
     %choose spatial location for point
     arxyzi = arxyz(i,:);
-    edloc = [-obsz(1,1), 0,0];
+    edloc = [-obsz(1,1)*xmul, 0,0];
     arloc = arxyzi;
-    varloc = [0,randn(1,2)]*50;
+    varloc = [0,randn(1,2)]*locsig;
 
-    newloc = repmat(arloc + edloc+ varloc, size(eghandle.vertices,1),1);
+    newloc = repmat(arloc + edloc+ varloc, size(handle1.vertices,1),1);
+
+
     
     %place a shape in space at a random location
-    p = patch('Vertices', eghandle.vertices+newloc, 'Faces', eghandle.faces);
+%     p = patch('Vertices', eghandle.vertices+newloc, 'Faces', eghandle.faces);
+    p = patch('Vertices', newvert+newloc, 'Faces', handle1.faces);
+
     hold on
 
     % indicate the colour of the shape
@@ -60,12 +85,36 @@ for i = 1: numsh
     %rotate along axis
     rotate(p, [1,0,0], rand(1)*360, newloc(1,:))
     % rotate off axis
-%     rotate(p, [0,1,1]*randn*45, rand(1)*360, newloc(1,:))
+    rotate(p, [0,1,0], randn(1)*rotsig, newloc(1,:))
+    rotate(p, [0,0,1], randn(1)*rotsig, newloc(1,:))
     
 end
 
 % neaten up the plot
 looks(gcf)
+
+                             if saveon(2)==1
+                            
+                                % creates name for the file - numbers are values as identified
+                                %     num2str(RADIUS*rad); % radius length
+                                %     num2str(PITCHNO*zsc); % this is the pitch
+                                %     num2str(reso); % resolution, ie. chunks in one radius
+                                %     num2str(t(end)-t(1)/pi); % number of pitches
+                                %     num2str(diz*einterval*zsc); % this is the thickness
+                                %     num2str((PITCHNO*zsc)/(RADIUS*rad)); % this is the aspect ratio
+                                    pitchN = PITCHNO;%round((t(end)-t(1))/pi);
+                                    twritename = strcat('hel-ar',num2str(numsh),'-r1',num2str(einterval),'-sz',num2str(rad),'-N',num2str(pitchN),'-AR',num2str(ar),'-THK',num2str(thk));
+                                    twritename(twritename=='.')='_';
+                            
+                            % adds time-date stamp in order not to write over subsequent runs
+                                    totname = DT4filename;
+                                    twritename=strcat(twritename, totname);
+                            
+                            % saves stl file to homefol
+                                    cd(homefol)
+                            %         FV1 = triangulation(f1,v1);
+                                    stlwrite(strcat(twritename,'.stl'), f1,v1);
+                                end
 
 
 end

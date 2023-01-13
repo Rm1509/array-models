@@ -7,3 +7,4 @@ eghandle = makeHelicoid(3,  1,      [2,2,3],  1, homefol, 100, 0.05  );
 eghandle = makeHelicoid(3,  1,   [2,2,3], homefol, 1,  100, 0.05);
 eghandle = makeHelicoid(3,  1,   [2,2,3], homefol, 0,  100, 0.05);
 
+multiparticle
