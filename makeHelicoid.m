@@ -1,4 +1,4 @@
-function handle1 = makeHelicoid(ar, PITCHNO, thk, homefol, saveon, rad, einterval )
+function handle1 = makeHelicoid(ar, PITCHNO, thk, homefol, saveon, rad, einterval, options )
 %                   makeHelicoid(3,  1,   [2,2,3], homefol, 1,  100, 0.05)
 % ar=3; PITCHNO=1; thk = [2,2,3]; saveon=0;  rad = 100; einterval=0.05; homefol='C:\Users\Rox\OneDrive - University of Bristol\Documents\lumericalbeb\221201 multi tests\matfiles'; 
 
@@ -15,6 +15,16 @@ function handle1 = makeHelicoid(ar, PITCHNO, thk, homefol, saveon, rad, einterva
     % einterval is the resolution of the object mesh grid, or 'resolution' % (OPTIONAL)
 
 % -----------------------------------------------------------------------------------------
+arguments
+    ar double
+    PITCHNO double
+    thk double
+    homefol string
+    saveon int32
+    rad double
+    einterval double
+    options.figadd handle
+end
 
 
 % 1. hard coded and default values
@@ -63,7 +73,8 @@ function handle1 = makeHelicoid(ar, PITCHNO, thk, homefol, saveon, rad, einterva
     fvcoords2 = [fvcoords(:,3),fvcoords(:,1), fvcoords(:,2)];
     
                     %  xxxxxxxxx Here's the final shape figure xxxxxxxxxxxxxxxxxx
-    figure;  isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
+    figure; 
+    isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
     handle1 = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2])); % attempt to return the surface as an output in handle1
     [f1,v1] = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
 
