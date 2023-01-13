@@ -1,21 +1,22 @@
 function multiparticle()
 % 
+% -	Control distribution in z – done
+% -	Add a grid of distribution in x-y which the deviation is on - done 
 % -	Neaten up multiparticle so all of these things are inputs and outputs
+% -	Twist the curls round the central corkscrew
+
 % -	Allow or disallow intersection
-% -	Control distribution in z – first attempt at this, but it doesn’t work very well
-% -	Add a grid of distribution in x-y which the deviation is away from
 % -	Control the angular orientation within a range
 % -	Save these and load them in Lumerical (NB. Radically different sizes!)
 % -	Control size and add these to Lumerical
 % -	Allow a range of sizes and a range of lengths
-% -	Twist the curls round the central corkscrew
 % -	Use different shapes
 
 %how many shapes wanted
 numsh = 9;
 
 %figure setup
-figure
+% figure
 pcol = parula(numsh);
 
 % this is required if you want to save it,  but is not actually important
@@ -24,7 +25,7 @@ homefol = 'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb
 %this calls the basic shape, for when the same shape is reproduced multiple
 %times
 eghandle = makeHelicoid(3,  1,   [2,2,3], homefol, 0,  100, 0.05);
-
+close(gcf);
 %how big is the object
 obsz = obsz3(eghandle)
 
@@ -43,15 +44,9 @@ for i = 1: numsh
     arxyzi = arxyz(i,:);
     edloc = [-obsz(1,1), 0,0];
     arloc = arxyzi;
-    varloc = [0,randn(1,2)]*0;
-%     size(arxyzi)
-%     size(edloc)
-%     size(arloc)
-%     size(varloc)
+    varloc = [0,randn(1,2)]*50;
 
     newloc = repmat(arloc + edloc+ varloc, size(eghandle.vertices,1),1);
-%     newloc = repmat([150,200*randn(1,2)], size(eghandle.vertices,1),1); % this is random
-
     
     %place a shape in space at a random location
     p = patch('Vertices', eghandle.vertices+newloc, 'Faces', eghandle.faces);
@@ -62,7 +57,10 @@ for i = 1: numsh
     p.EdgeColor= pcol(i,:);
 
     %rotate the shape according to a distribution 
-%     rotate(p, [randn(1), randn(1), randn(1)], 45.*randn(1))
+    %rotate along axis
+    rotate(p, [1,0,0], rand(1)*360, newloc(1,:))
+    % rotate off axis
+%     rotate(p, [0,1,1]*randn*45, rand(1)*360, newloc(1,:))
     
 end
 
