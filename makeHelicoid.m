@@ -1,4 +1,4 @@
-function handle1 = makeHelicoid(ar, PITCHNO, thk, homefol, saveon, rad, einterval, options )
+function [f1,v1]= makeHelicoid(ar, PITCHNO, thk, homefol, saveon, rad, einterval, options )
 %                   makeHelicoid(3,  1,   [2,2,3], homefol, 1,  100, 0.05)
 % ar=3; PITCHNO=1; thk = [2,2,3]; saveon=0;  rad = 100; einterval=0.05; homefol='C:\Users\Rox\OneDrive - University of Bristol\Documents\lumericalbeb\221201 multi tests\matfiles'; 
 
@@ -74,8 +74,8 @@ end
     
                     %  xxxxxxxxx Here's the final shape figure xxxxxxxxxxxxxxxxxx
     figure; 
-    isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
-    handle1 = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2])); % attempt to return the surface as an output in handle1
+%     isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
+%     handle1 = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2])); % attempt to return the surface as an output in handle1
     [f1,v1] = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
 
     xlabel('x'); ylabel('y'); zlabel('z');% xlim([-xsc xsc]*2.1/2) % ylim([-ysc ysc]*2.1/2) % zlim([-zsc zsc]*2.1/2)   
@@ -91,7 +91,7 @@ end
     %     num2str(t(end)-t(1)/pi); % number of pitches
     %     num2str(diz*einterval*zsc); % this is the thickness
     %     num2str((PITCHNO*zsc)/(RADIUS*rad)); % this is the aspect ratio
-        pitchN = round((t(end)-t(1))/pi);
+        pitchN = PITCHNO;%round((t(end)-t(1))/pi);
         twritename = strcat('helicoid1-reso',num2str(reso),'-SZ',num2str(rad),'-N',num2str(pitchN),'-AR',num2str(ar),'-THK',num2str(diz*zsc/reso));
         twritename(twritename=='.')='_';
 
