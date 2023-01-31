@@ -1,4 +1,4 @@
-function fv_combined = multiparticle()
+function fv_combined = multiparticle(homefol)
 % 
 % -	Control distribution in z – done
 % -	Add a grid of distribution in x-y which the deviation is on - done 
@@ -26,7 +26,7 @@ thk = [2,2,3];
 saveon = [0,1];
 rad = 100;
 einterval=0.05;
-homefol = 'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\230112';
+% homefol = 'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\230112';
 
 %figure setup
 % figure
