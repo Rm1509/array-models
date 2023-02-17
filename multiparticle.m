@@ -15,15 +15,15 @@ function fv_combined = multiparticle(homefol)
 % -	Use different shapes
 
 %how many shapes wanted
-numsh = 2; % number of particles in square grid
-rotsig =10; % sigma of random rotation around y & z axes independently (deg)
-resize1 = 0.2; % sigma of random particle resize uniform in all 3 dimensions
-locsig = 20; % sigma of particle distribution deviation from grid
+numsh = 1; % number of particles in square grid
+rotsig =0;%10; % sigma of random rotation around y & z axes independently (deg)
+resize1 = 0;%0.2; % sigma of random particle resize uniform in all 3 dimensions
+locsig = 0;%20; % sigma of particle distribution deviation from grid
 
-ar = 3;
+ar = 1;%3;
 PITCHNO = 1;
 thk = [2,2,3];
-saveon = [0,1];
+saveon = [0,1];%[0,1];
 rad = 100;
 einterval=0.05;
 % homefol = 'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\230112';
@@ -45,10 +45,17 @@ close(gcf);
 obsz = obsz3(v1)
 
 %make an array
-arlen = ceil(sqrt(numsh));
-arym = repmat([1:arlen]', 1, arlen)*obsz(2,3);
-arzm = repmat([1:arlen], arlen, 1)*obsz(3,3);
-arxm = zeros(size(arym))*obsz(1,3)/10;
+if numsh==1
+    arxm = -obsz(1,3)/2;arym =0; arzm =0;
+%     arxyz =[obsz(1,3)/2,obsz(2,3)/2,obsz(3,3)/2 ];
+else
+    arlen = ceil(sqrt(numsh));
+    larlen=arlen-1;
+    arym = repmat([-larlen/2:larlen/2]', 1, arlen)*obsz(2,3); %previously this was 1:arlen, but it makes a grid with 0,0 inthe corner
+    arzm = repmat([-larlen/2:larlen/2], arlen, 1)*obsz(3,3);
+%     arxm = zeros(size(arym))*obsz(1,3)/10; %this makes the base 0, instead of the centre
+    arxm = -1*ones(size(arym))*obsz(1,3)/2;%this makes the centre at 0, instead of the base
+end    
 arxyz = [arxm(:), arym(:), arzm(:)];
 figure; scatter3(arxm(:), arym(:), arzm(:))
 
@@ -57,7 +64,7 @@ fv_combined.vertices = [];
 fv_combined.faces = [];
 % to make a multiarray, each one is made in this loop
 
-for i = 1: numsh
+for i = 1: numsh % going through each one of the number of shapes
 
 %     resizing
     xmul = 1 +randn(1)*resize1;%.*obsz(1,3);
@@ -67,7 +74,7 @@ for i = 1: numsh
 
     %choose spatial location for point
     arxyzi = arxyz(i,:);
-    edloc = [-obsz(1,1)*xmul, 0,0];
+    edloc = [-obsz(1,1)*xmul, 0,0]; % this makes the location place
     arloc = arxyzi;
     varloc = [0,randn(1,2)]*locsig;
 
@@ -137,7 +144,7 @@ looks(gcf)
                                     twritename=strcat(twritename, totname);
                             
                             % saves stl file to homefol
-                                    cd(homefol)
+                                    cd(strcat(homefol,'/matfiles'))
                             %         FV1 = triangulation(f1,v1);
 %                             trangstl = triangulation(fv_combined.faces,fv_combined.vertices );
                                 

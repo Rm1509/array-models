@@ -1,4 +1,4 @@
-function makelumhomefol (homefol)
+function newf = makelumhomefol (homefol)
 
 cd(homefol)
 nom=DT4filename;

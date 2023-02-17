@@ -11,6 +11,6 @@
 
 %now
 homefol='C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev';
-makelumhomefol(homefol)
-multiparticle(homefol)
+newhomef = makelumhomefol(homefol);
+multiparticle(newhomef)
 %then run lumerical file with same
