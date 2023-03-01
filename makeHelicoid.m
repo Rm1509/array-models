@@ -45,11 +45,16 @@ end
     
 % 3. make xyz points
     [px,py,pz] = meshgrid(-R:einterval:R);
+    xran =-R:einterval:R;
+    yran=-R:einterval:R;
+%     zlow = ; zhigh = 
+    zran = (-PITCHNO*3.142/2):einterval:(PITCHNO*3.142/2);
+    [px,py,pz] = meshgrid(xran,yran,zran);
     pxyz = [px(:),py(:),pz(:)];
     reso = RADIUS/einterval;
 
 % 4. make xyz function points for a helix
-    hxyz = helicoid(PITCHNO, einterval, RADIUS, px);
+    hxyz = helicoid(PITCHNO, einterval, RADIUS);
 
 % 5. This function takes a long time. It matches each of the new function points to a point on the grid 
     k = dsearchn(pxyz,hxyz); 
@@ -69,14 +74,19 @@ end
 
 
 % 9. turns shape to x axis and labels it in a figure 
-    fvcoords = [squeeze(px(1,1:end-dend(1),1))'*xsc,squeeze(py(1:end-dend(2),1,1))*ysc,squeeze(pz(1,1,1:end-dend(3)))*zsc];
-    fvcoords2 = [fvcoords(:,3),fvcoords(:,1), fvcoords(:,2)];
+%     fvcoords = [squeeze(px(1,1:end-dend(1),1))'*xsc,squeeze(py(1:end-dend(2),1,1))*ysc,squeeze(pz(1,1,1:end-dend(3)))*zsc];
+%     fvcoords2 = [fvcoords(:,3),fvcoords(:,1), fvcoords(:,2)];
+
+    fvcx = squeeze(px(1,1:end-dend(1),1))'*xsc; fvcx2 = fvcx(:);
+    fvcy = squeeze(py(1:end-dend(2),1,1))*ysc; fvcy2 = fvcy(:);
+    fvcz = squeeze(pz(1,1,1:end-dend(3)))*zsc; fvcz2 = fvcz(:);
     
                     %  xxxxxxxxx Here's the final shape figure xxxxxxxxxxxxxxxxxx
     figure; 
 %     isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
 %     handle1 = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2])); % attempt to return the surface as an output in handle1
-    [f1,v1] = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
+%     [f1,v1] = isosurface(fvcoords2(:,1), fvcoords2(:,2), fvcoords2(:,3), permute(ttf2,[1,3,2]));
+    [f1,v1] = isosurface(fvcz2, fvcx2, fvcy2, permute(ttf2,[1,3,2]));
 
     xlabel('x'); ylabel('y'); zlabel('z');% xlim([-xsc xsc]*2.1/2) % ylim([-ysc ysc]*2.1/2) % zlim([-zsc zsc]*2.1/2)   
                     %  xxxxxxxxxxxxxx END FIGURE xxxxxxxxxxxxxxxxxx
@@ -133,13 +143,13 @@ function ttf2 = volumise(ttf, dix, diy, diz)
     end
 
 end
-function hxyz = helicoid(PITCHNO, einterval, RADIUS, px)
+function hxyz = helicoid(PITCHNO, einterval, RADIUS)%, px)
 % this function takes the inputs and makes an array of points that lie on
 % the equation for a 'helicoid'
     t = -PITCHNO*pi/2:einterval:PITCHNO*pi/2; % single pitch
     u= -RADIUS:einterval:RADIUS;
     
-    v = nan(size(px));
+%     v = nan(size(px));
     
     hx = u'*cos(t);
     hy = u'*sin(t);

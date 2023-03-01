@@ -1,4 +1,4 @@
-function fv_combined = multiparticle(homefol)
+function [fv_combined, volrec] = multiparticle(homefol,numsh, ar, PITCHNO, thk,  saveon, rad, rotsig, resize1,locsig, spacer1)
 % 
 % -	Control distribution in z – done
 % -	Add a grid of distribution in x-y which the deviation is on - done 
@@ -14,17 +14,39 @@ function fv_combined = multiparticle(homefol)
 
 % -	Use different shapes
 
-%how many shapes wanted
-numsh = 1; % number of particles in square grid
-rotsig =0;%10; % sigma of random rotation around y & z axes independently (deg)
-resize1 = 0;%0.2; % sigma of random particle resize uniform in all 3 dimensions
-locsig = 0;%20; % sigma of particle distribution deviation from grid
+typarray = 'hexag'; % or 'square'
 
+%how many shapes wanted
+if ~exist("numsh", "var")
+numsh = 1; % number of particles in square grid
+end
+if ~exist("rotsig","var")
+rotsig =0;%10; % sigma of random rotation around y & z axes independently (deg)
+end
+if ~exist("resize1", "var")
+resize1 = 0;%0.2; % sigma of random particle resize uniform in all 3 dimensions
+end
+if ~exist("locsig", "var")
+locsig = 0;%20; % sigma of particle distribution deviation from grid
+end
+if ~exist("ar", "var")
 ar = 1;%3;
+end
+if ~exist("PITCHNO" ,"var")
 PITCHNO = 1;
+end
+if ~exist("thk", "var")
 thk = [2,2,3];
-saveon = [0,1];%[0,1];
+end
+if ~exist("saveon", "var")
+saveon = [0,0];%[0,1];
+end
+if ~exist("rad", "var")
 rad = 100;
+end
+if ~exist("spacer1", "var")
+spacer1 = 0;
+end
 einterval=0.05;
 % homefol = 'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\230112';
 
@@ -42,27 +64,22 @@ pcol = parula(numsh);
 
 close(gcf);
 %how big is the object
+size(v1)
 obsz = obsz3(v1)
 
 %make an array
-if numsh==1
-    arxm = -obsz(1,3)/2;arym =0; arzm =0;
-%     arxyz =[obsz(1,3)/2,obsz(2,3)/2,obsz(3,3)/2 ];
-else
-    arlen = ceil(sqrt(numsh));
-    larlen=arlen-1;
-    arym = repmat([-larlen/2:larlen/2]', 1, arlen)*obsz(2,3); %previously this was 1:arlen, but it makes a grid with 0,0 inthe corner
-    arzm = repmat([-larlen/2:larlen/2], arlen, 1)*obsz(3,3);
-%     arxm = zeros(size(arym))*obsz(1,3)/10; %this makes the base 0, instead of the centre
-    arxm = -1*ones(size(arym))*obsz(1,3)/2;%this makes the centre at 0, instead of the base
-end    
-arxyz = [arxm(:), arym(:), arzm(:)];
-figure; scatter3(arxm(:), arym(:), arzm(:))
+if strcmp(typarray,'square')
+arxyz = squarray(numsh, obsz, spacer1);
+elseif strcmp(typarray, 'hexag')
+arxyz = hexray(numsh, obsz, spacer1);
+end
 
 % fv_combined = struct([]);
-fv_combined.vertices = [];
-fv_combined.faces = [];
+% fv_combined.vertices = [];
+% fv_combined.faces = [];
 % to make a multiarray, each one is made in this loop
+
+                                
 
 for i = 1: numsh % going through each one of the number of shapes
 
@@ -108,22 +125,31 @@ for i = 1: numsh % going through each one of the number of shapes
 %     pV = get(p, '')
 
 
-if i == 1
-    fvcombovert = pverts;
-    fvcomboface = pfaces;
-%     fvcomboface = f1; fvcombovert = verts; 
-else
-    tfv = fvcombovert;
-    tff = fvcomboface;
-    ntfv = length(tfv);
-    fvcombovert = [tfv; pverts];
-    fvcomboface = [tff; pfaces+ntfv];
+        if i == 1
+            fvcombovert = pverts;
+            fvcomboface = pfaces;
+        %     fvcomboface = f1; fvcombovert = verts; 
+        else
+            tfv = fvcombovert;
+            tff = fvcomboface;
+            ntfv = length(tfv);
+            fvcombovert = [tfv; pverts];
+            fvcomboface = [tff; pfaces+ntfv];
+        
+        end
+            
+        end
+        fv_combined.vertices =fvcombovert;
+        fv_combined.faces = fvcomboface;
 
-end
-    
-end
+        % here the size of the object group
+        % should be measured and returned
+x12= [max(fvcombovert(:,1)), min(fvcombovert(:,1))];
+y12= [max(fvcombovert(:,2)), min(fvcombovert(:,2))];
+z12= [max(fvcombovert(:,3)), min(fvcombovert(:,3))];
+volrec = [ceil(x12(1)-x12(2)), ceil(y12(1)-y12(2)),ceil(z12(1)-z12(2))];
 
-% neaten up the plot
+        % neaten up the plot
 looks(gcf)
 
                              if saveon(2)==1
@@ -149,14 +175,70 @@ looks(gcf)
 %                             trangstl = triangulation(fv_combined.faces,fv_combined.vertices );
                                 
                                     stlwrite(strcat(twritename,'.stl'), fvcomboface,fvcombovert);
-                                   
+                                   save(strcat(twritename,'.mat'),"volrec")
 %                                     stlwrite(strcat(twritename,'.stl'), f1,v1);                   % this works
 
                                     %                                     stlwrite(trangstl, 'eg.stl', 'binary');
 
+
+
                              end
 
 
+end
+
+%function to make a square array of given size
+function arxyz = squarray(numsh, obsz, spacer1)
+    if numsh==1
+        arxm = -obsz(1,3)/2;arym =0; arzm =0;
+    %     arxyz =[obsz(1,3)/2,obsz(2,3)/2,obsz(3,3)/2 ];
+    else
+        arlen = ceil(sqrt(numsh));
+        larlen=arlen-1;
+        arym = repmat([-larlen/2:larlen/2]', 1, arlen)*(obsz(2,3)+spacer1); %previously this was 1:arlen, but it makes a grid with 0,0 inthe corner
+        arzm = repmat([-larlen/2:larlen/2], arlen, 1)*(obsz(3,3)+spacer1);
+    %     arxm = zeros(size(arym))*obsz(1,3)/10; %this makes the base 0, instead of the centre
+        arxm = -1*ones(size(arym))*obsz(1,3)/2;%this makes the centre at 0, instead of the base
+    end    
+    arxyz = [arxm(:), arym(:), arzm(:)];
+    figure; scatter3(arxm(:), arym(:), arzm(:))
+end
+
+%function to make a hexagonal array of given size
+function arxyz = hexray(numsh, obsz, spacer1);
+    if numsh==1
+            arxm = -obsz(1,3)/2;arym =0; arzm =0;
+        %     arxyz =[obsz(1,3)/2,obsz(2,3)/2,obsz(3,3)/2 ];
+        else
+            arlen = ceil(sqrt((numsh/6)*2));
+            base=1*(obsz(2,3)+spacer1);
+            arzm=[];
+            arym=[];
+            for num=1:arlen
+                z=zeros(num*6,1);
+                y=zeros(num*6,1);
+                z(1:6)=base*num*cos(2*pi/6.*(0:5));
+                y(1:6)=base*num*sin(2*pi/6.*(0:5));
+                if num>1
+                    for q=1:num-1
+                       start_x=z(2)-q*base;
+                       radi0=sqrt(start_x^2+y(2)^2);
+                       start_alpha=1/3*pi+pi*1/3*1/(num)*q;
+                       z(q*6+1:q*6+6)=radi0*cos(start_alpha+pi/3.*(1:6));
+                       y(q*6+1:q*6+6)=radi0*sin(start_alpha+pi/3.*(1:6));
+                    end
+                end
+                arzm=[arzm; z];
+                arym=[arym; y];
+
+            end
+             arzm=[0;arzm];
+             arym=[0;arym];
+            arxm = -1*ones(size(arym))*obsz(1,3)/2;%this makes the centre at 0, instead of the base
+
+        end    
+        arxyz = [arxm(:), arym(:), arzm(:)];
+        figure; scatter3(arxm(:), arym(:), arzm(:))
 end
 
 %function to find size of 3d object
