@@ -1,0 +1,328 @@
+#########################################################################
+##
+##
+## scriptfile run_matlab shapes
+##
+## Lots of previous versions of the file, for example using rectangles etc. are stored here: C:\Users\Rox\OneDrive - University of Bristol\Documents\bloom\lumerical\200414Scripting
+##
+##
+##
+##
+##
+##
+##
+#########################################################################
+#homefols = {'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\difftnumbersTest\230224',
+#'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\angular disorder\230224',
+#'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\sizedisorder\230224',
+#'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\locationdisorder\230224',
+#'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\arraySpacing\230224',
+#'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\hexagonalArrayNumbers\230224'};
+
+
+#homefols = {'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\manypitches\230303',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\multilayers\230303',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\parabhelicAngDis\230302',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\2layersAngDis\230304',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\2layersLocDis\230304',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\2layersUDDis\230304',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\2layersSizeDis\230304',
+        #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\2layersUDDis\230307',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\2layersSizeDis\230307',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\CerintheCombo\230307',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\sizes\230307',
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\parabhelicNumParticles\230307'};
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\singles\230310'
+    #'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\singleslowangle\230310' 
+#'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\CerintheCombo\smallbox\230310'};
+#'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\CerintheCombo\230309' 
+homefols = {    'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\singleslowangle\230312'}; 
+
+for (id=1){
+
+    # inputfolder and # mie scattering project
+    homefolder = homefols{id};
+    miefil ='C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\mie_scattering_fdtd_importMatlabNOSYMMETRYmultiWORKS';#'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\mie_scattering_fdtd_importMatlabNOSYMMETRY';#miefil ='C:\Users\Rox\OneDrive - University of Bristol\Documents\bloom\lumerical\200213Mie\mie_scattering_fdtd_importMatlabRingNOSYMMETRY.fsp';
+    matfolin= homefolder+'\matfiles';
+    lumfolout = homefolder + '\lumfiles';
+    folout= homefolder +'\output';
+    boxsca=1;
+    
+    # go to the folder and find the shape files that could be loaded
+    cd(matfolin);
+    files = splitstring(dir,endl); 
+    files = files{3:length(files)};
+    
+    files = splitstring(dir,endl);        # directory contents in a cell (string) array
+ #    
+  
+    k=1;
+        for(i=1:length(files)) {           # loop over all files
+            if (findstring(files{i},"stl") != -1) {  # look for 'stl' files
+                if (fileexists(files{i})) {       # check if the file exists (ie. it's a file and not a directory)
+                    k=k+1;               
+                }
+            }
+        }
+        newfiles = cell(k-1);
+        k=0;
+        for(i=1:length(files)) {           # loop over all files
+            if (findstring(files{i},"stl") != -1) {  # look for 'stl' files
+                if (fileexists(files{i})) {       # check if the file exists (ie. it's a file and not a directory)
+                    #?files{i};               # output file name
+                    #load(files{i});            # load file
+                    #setind(k) = i;
+                    k=k+1;  
+                    newfiles{k} = files{i};
+                          
+                }
+            }
+        }
+        
+        files = newfiles;
+        
+        #define the varying parameters
+    numbershapes2sweep = length(files);#length(files);#i
+   
+    numbersizes2sweep=1;#k
+    
+    numberangle1s2sweep = 1;#m
+    numberangle2s2sweep = 1;#n
+    numberangle3s2sweep = 1;#p
+    numberanglesets2sweep=1;#q
+    numberpols2sweep = 2;
+    i=1;j=1;k=1;m=1;n=1;p=1;
+    
+    stansize=1*1e-9;
+    sizes2sweep = stansize; #linspace(80, 120, numbersizes2sweep)*1e-9;
+    angle1s2sweep = linspace(0,90,numberangle1s2sweep);
+    angle2s2sweep = linspace(0,90,numberangle1s2sweep);
+    angle3s2sweep = linspace(0,180,numberangle1s2sweep);
+    pols2sweep = linspace(0,90,numberpols2sweep);
+    anglesets2sweep = [0,0,0];#[45,45,45;45,45,90];
+
+
+    for (i =1:length(files)){#length(files)){
+        
+        #folderin = homefolder; #+'\'+folders{i};  
+        #folderout = folderin+'\_out\';#
+    
+            if (findstring(files{i},"stl") != -1) { 
+                load(miefil);
+                #select("mesh");
+                #dx= get("dx");
+                
+                    if (!layoutmode) {
+                        switchtolayout;
+                    } 
+                    
+                #things that must always be the same
+                setnamed('mie_source', 'wavelength start',1.8e-007 );
+                setnamed('mie_source', 'wavelength stop',6e-007  ); 
+    
+    
+                #sizens=[1e-9];#[1.88e-6];
+                #lolength=lens2run(m)*1e-009*2;#-4,k-3)*1e-009*2;
+                #shwidth=wids2run(m)*1e-009*2;#-4,k-3)*1e-009*2;
+                #anglech=10;
+                #angle2=10;      
+                #angle3=10;
+                #angleset=rot1angles(m,:);
+                #if (i>10){
+                    #angle3=60;}
+    
+                #for (k=1:numbersizes2sweep){
+                    k=1;
+                    size_k = sizes2sweep(k);
+                #for (k=1){#:rot1no(2)){
+                    #for (a =1){#1:7){
+                    #if (!layoutmode) {
+                        #switchtolayout;
+                        #} 
+                    # load the object# set the object characteristics ie. refractive index
+                    setnamed('item1','enabled',0);
+                    select('item1');
+                    delete;
+                    filename = files{i};
+                    #cd(matfolin)
+                    stlimport(matfolin+'\'+filename, size_k);                    
+                    set('name','item1');
+                    matlabload(matfolin+'\'+substring(filename, 1,length(filename)-4) + ".mat");
+                    xlen = volrec(1);ylen = volrec(2);zlen = volrec(3); 
+                    xlx = xlen/100; ylx = ylen/100; zlx = zlen/100;
+
+                   setnamed('item1','index',1.48);
+                    setnamed('item1','first axis','x');
+                    setnamed('item1','second axis','y');
+                    setnamed('item1','third axis','z');
+                    
+                    #for (q=1:numberanglesets2sweep){
+                        q=1;
+                        angle1= anglesets2sweep(q,1);
+                        angle2= anglesets2sweep(q,2);
+                        angle3= anglesets2sweep(q,3);
+                        setnamed('item1','rotation 1',angle1);
+                        setnamed('item1','rotation 2',angle2);
+                        setnamed('item1','rotation 3',angle3);
+        
+        
+                        groupscope("::model");
+                        setnamed('mie_source', 'polarization angle', pols2sweep(j));    
+                        
+                        # this is to set the simulation size. 
+                        xsp = xlx*(size_k+0.1e-006);             
+                        ysp = ylx*(size_k+0.1e-006);       
+                        zsp = zlx*(size_k+0.1e-006);                                                                                        #* 1e-006;
+                        ysp = ylx*(abs((sin((angle3/360)*2*pi)))*(size_k+0.15e-006)+size_k);#(lolength+0.15e-006)+shwidth;                            #           ysp = (sin((anglech/360)*2*pi))*(shwidth+0.15e-006);
+                        zsp = zlx*(abs((sin((angle2/360)*2*pi)))*(size_k+0.15e-006)+size_k);                                                       #           zsp = shwidth;#0.15e-006*Npitch;
+                          
+                        xsp=xlen*boxsca*1e-9*size_k*1e9;
+                        ysp=ylen*boxsca*1e-9*size_k*1e9;
+                        zsp=zlen*boxsca*1e-9*size_k*1e9;
+                        ssp = max([xsp,ysp,zsp]);  
+                        
+                        set('particle_x_span',  xsp+ 1e-007);#             
+                        set('particle_y_span',  ysp+ 1e-007);#
+                        set('particle_z_span', zsp+ 1e-007);# height
+                        #set('simulation_span', ssp+ 4e-007);#paw+2e-007);
+                        #set('particle_x_span', 5.5e-07);set('particle_y_span', 5.5e-07);set('particle_z_span', 5.5e-07);
+                        set('simulation_span', ssp);#7.5e-07*ssp);   
+                        #set('sim_x_span',        
+                        set('sim_x_span', xsp+ 2e-007);#paw+2e-007);
+                        set('sim_y_span', ysp+ 2e-007);#paw+2e-007);
+                        set('sim_z_span', zsp+ 2e-007);#paw+2e-007);
+                        
+                        lumfilename = substring(filename, 1,length(filename)-4) + '_' +num2str(size_k)+'nm_ang'+num2str(q)+'.fsp';
+                        
+                        save(lumfolout+'\'+lumfilename);
+                        #run;
+                    #}
+                #}
+            }
+        }
+    }
+        ###########################################
+
+ 
+    boxsca=1;
+    
+
+for (id=1){ 
+      homefolder = homefols{id};
+        folout= homefolder +'\output';
+        lumfolout = homefolder + '\lumfiles';
+        matfolin= homefolder+'\matfiles';
+        cd(lumfolout);
+        lumfiles= splitstring(dir,endl); lumfiles = lumfiles{3:length(lumfiles)};
+         numberpols2sweep = 2;#j
+           pols2sweep = linspace(0,90,numberpols2sweep);
+        
+        for (i=1:length(lumfiles)){ #27){#
+            if (findstring(lumfiles{i},"fsp") != -1) { 
+                load(lumfiles{i});
+            }
+            if (!layoutmode) {
+               switchtolayout;
+             } 
+            
+            # set up data storage locations
+            TXY = cell(numberpols2sweep); 
+            TYZ = cell(numberpols2sweep);
+            TXZ = cell(numberpols2sweep);
+            
+
+            for (j=1:numberpols2sweep){
+                # reset
+                if (!layoutmode) {
+                    switchtolayout;
+                    }  
+                
+                # set polarisation
+                pol_j =pols2sweep(j);
+                setnamed('mie_source', 'polarization angle', pol_j);                                            
+                
+                # run               
+                run;
+    
+                # store result
+                XY = getresult("scat_ff","XY");
+                YZ = getresult("scat_ff","YZ");
+                XZ = getresult("scat_ff","XZ");
+                TXY{j}=XY;
+                TYZ{j}=YZ;
+                TXZ{j}=XZ;
+                        
+                #filenamemv =lumfiles{i};
+                #replacestring(filenamemv, ".fsp","_movie.m1v");
+                #nufilenamemv =lumfiles{i};
+                #replacestring(nufilenamemv, ".fsp","_movie_"+num2str(j)+".m1v");
+                #mv(filenamemv,nufilenamemv );
+                
+                #filenamemv2 =lumfiles{i};
+                #replacestring(filenamemv2, ".fsp","_movie_2.m1v");
+                #nufilenamemv2 =lumfiles{i};
+                #replacestring(nufilenamemv2, ".fsp","_movie_2_"+num2str(j)+".m1v");
+                #mv(filenamemv2,nufilenamemv2 );
+                
+                
+                }
+             #save
+            tdat = TXY;
+            matlabsave(folout+'\'+lumfiles{i}+'_TXY.mat',tdat);
+            tdat = TXZ;
+            matlabsave(folout+'\'+lumfiles{i}+'_TXZ.mat',tdat);#folout+filename+'-rot1-'+num2str(angle2)+'-VARrot2-'+num2str(angle3)+'-scaled'+num2str(sizens(1)*1e7)+'e-1_TXZ.mat',TXZ);
+            tdat = TYZ;            
+            matlabsave(folout+'\'+lumfiles{i}+'_TYZ.mat',tdat);#folout+filename+'-rot1-'+num2str(angle2)+'-VARrot2-'+num2str(angle3)+'-scaled'+num2str(sizens(1)*1e7)+'e-1_TYZ.mat',TYZ);
+                
+        }
+}
+
+                        # measure and rescale the object - this isn't possible in lumerical!
+            
+                        # run a number of trials
+            
+                        #pol12 =2; #polarisations
+                        #poli = linspace(0,90,pol12);
+            
+                        #TXY = cell(pol12);
+                        #TYZ = cell(pol12);
+                        #TXZ = cell(pol12);
+            
+                        #for (i=1:nangles){
+                        #anglech = angles(i);
+                
+                        #for (j=1:pol12){
+                
+                            #if (!layoutmode) {
+                                #switchtolayout;
+                                #}  
+                            
+                            #pola =poli(j);
+                            #groupscope("::model");
+                            
+                            #set the shape details  ;   
+                
+                            #set the sim area            
+
+                
+                
+                            #setnamed('mie_source', 'polarization angle', pola);                                            
+                    
+                        
+                        #run;
+            
+                        #XY = getresult("scat_ff","XY");
+                        #YZ = getresult("scat_ff","YZ");
+                        #XZ = getresult("scat_ff","XZ");
+                        #TXY{j}=XY;
+                        #TYZ{j}=YZ;
+                        #TXZ{j}=XZ;
+            
+    
+                    #}
+                    #matlabsave(folderout+filename+'-rot1-'+num2str(angle2)+'-VARrot2-'+num2str(angle3)+'-scaled'+num2str(sizens(1)*1e7)+'e-1_TXY.mat',TXY);
+                    #matlabsave(folderout+filename+'-rot1-'+num2str(angle2)+'-VARrot2-'+num2str(angle3)+'-scaled'+num2str(sizens(1)*1e7)+'e-1_TXZ.mat',TXZ);
+                    #matlabsave(folderout+filename+'-rot1-'+num2str(angle2)+'-VARrot2-'+num2str(angle3)+'-scaled'+num2str(sizens(1)*1e7)+'e-1_TYZ.mat',TYZ);
+                
+                      #}
+    

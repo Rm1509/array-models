@@ -1,4 +1,4 @@
-function [fv_combined, volrec] = multiparticle(homefol,numsh, ar, PITCHNO, thk,  saveon, rad, rotsig, resize1,locsig, spacer1)
+function [fv_combined, volrec] = multiparticle(homefol,numsh, ar, PITCHNO, thk,  saveon, rad, rotsig, resize1,locsig, xloc, spacer1, layers, shape, grid)
 % 
 % -	Control distribution in z – done
 % -	Add a grid of distribution in x-y which the deviation is on - done 
@@ -14,7 +14,12 @@ function [fv_combined, volrec] = multiparticle(homefol,numsh, ar, PITCHNO, thk, 
 
 % -	Use different shapes
 
-typarray = 'hexag'; % or 'square'
+% grid='hexag'; % or 'square';% or 
+
+% % % %  % save a small box
+% % % % cd('C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\hexagonalArrayNumbers\230224\matfiles')
+% % % % load('hel-ar7-r10_05-sz100-N1-AR4-THK2  2  3_DT230224-153113.mat', 'volrec')
+% % % % box7 = volrec;  
 
 %how many shapes wanted
 if ~exist("numsh", "var")
@@ -49,6 +54,20 @@ spacer1 = 0;
 end
 einterval=0.05;
 % homefol = 'C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\230112';
+allvariables.numsh = numsh;
+allvariables.rotsig = rotsig;
+allvariables.resize1 = resize1;
+allvariables.locsig = locsig;
+allvariables.xloc = xloc;
+allvariables.ar=ar;
+allvariables.PITCHNO = PITCHNO;
+allvariables.thk = thk;
+allvariables.rad = rad;
+allvariables.spacer1 = spacer1;
+allvariables.shape = shape;
+allvariables.layers = layers;
+allvariables.grid=grid;
+allvariables.homefol=homefol;
 
 %figure setup
 % figure
@@ -58,7 +77,19 @@ pcol = parula(numsh);
 
 %this calls the basic shape, for when the same shape is reproduced multiple
 %times
-[f1,v1] = makeHelicoid(ar, PITCHNO, thk, homefol, saveon(1), rad, einterval);
+                % #shape
+if strcmp(shape,'helicoid') || strcmp(shape,'helicoidp')
+[f1,v1] = makeHelicoid(ar, PITCHNO, thk, homefol, saveon(1), rad(1), einterval, shape);
+elseif strcmp(shape,'rod')
+[f1,v1] = makerod(ar, thk, homefol, saveon(1), rad(1), einterval );
+elseif strcmp(shape,'ring')
+    if size(rad,2)>1
+    rad2 = rad(2);
+    else
+    rad2=0.6*rad(1);
+    end
+    [f1,v1]=makering(ar, thk, homefol, saveon(1), rad(1), rad2, einterval );
+end
 % handle1 = makeHelicoid(3,  1,   [2,2,3], homefol, 0,  100, 0.05);
 % ar=3; PITCHNO=1; thk = [2,2,3]; saveon=0;  rad = 100; einterval=0.05; homefol='C:\Users\Rox\OneDrive - University of Bristol\Documents\lumericalbeb\221201 multi tests\matfiles'; 
 
@@ -68,9 +99,9 @@ size(v1)
 obsz = obsz3(v1)
 
 %make an array
-if strcmp(typarray,'square')
+if strcmp(grid,'square')
 arxyz = squarray(numsh, obsz, spacer1);
-elseif strcmp(typarray, 'hexag')
+elseif strcmp(grid, 'hex')
 arxyz = hexray(numsh, obsz, spacer1);
 end
 
@@ -79,75 +110,91 @@ end
 % fv_combined.faces = [];
 % to make a multiarray, each one is made in this loop
 
-                                
-
-for i = 1: numsh % going through each one of the number of shapes
-
-%     resizing
-    xmul = 1 +randn(1)*resize1;%.*obsz(1,3);
-    ymul = 1 +randn(1)*resize1;%.*obsz(2,3);
-    zmul = 1 +randn(1)*resize1;%.*obsz(3,3);
-    newvert = v1.*repmat([xmul,ymul,zmul],size(v1,1), 1);
-
-    %choose spatial location for point
-    arxyzi = arxyz(i,:);
-    edloc = [-obsz(1,1)*xmul, 0,0]; % this makes the location place
-    arloc = arxyzi;
-    varloc = [0,randn(1,2)]*locsig;
-
-    newloc = repmat(round(arloc + edloc+ varloc), size(v1,1),1);% this must be integer!
-%     newloc = repmat([177.1,188,215],size(v1,1),1); 
-    verts = newvert+newloc; % fvcombovert = verts doesn't work when newloc is added here, newvert*1.2 is fine
+for lno = 1:layers                      
+% layoffset= (lno-1)*2*obsz(1,1) ; % -2 makes the thing go backwards
+layoffset= (layers/2 - (lno-1))*2*obsz(1,1);
+    for i = 1: numsh % going through each one of the number of shapes
     
-    %place a shape in space at a random location
-%     p = patch('Vertices', eghandle.vertices+newloc, 'Faces', eghandle.faces);
-    p = patch('Vertices', verts , 'Faces', f1);
-%     p = isosurface()
-    hold on
-
-    % indicate the colour of the shape
-    p.FaceColor= pcol(i,:);
-    p.EdgeColor= pcol(i,:);
-
-    %rotate the shape according to a distribution 
-    %rotate along axis
-    rotate(p, [1,0,0], rand(1)*360, newloc(1,:))
-%     % rotate off axis
-    rotate(p, [0,1,0], randn(1)*rotsig, newloc(1,:))
-    rotate(p, [0,0,1], randn(1)*rotsig, newloc(1,:))
-        % these rotations aren't being combined into the output array!
-
-        pverts = get(p, 'Vertices');
-        pfaces = get(p, 'Faces');
-%     px = get(p,'XData');
-%     py = get(p,'YData');
-%     pz = get(p,'ZData');
-%     pV = get(p, '')
-
-
-        if i == 1
-            fvcombovert = pverts;
-            fvcomboface = pfaces;
-        %     fvcomboface = f1; fvcombovert = verts; 
-        else
-            tfv = fvcombovert;
-            tff = fvcomboface;
-            ntfv = length(tfv);
-            fvcombovert = [tfv; pverts];
-            fvcomboface = [tff; pfaces+ntfv];
+    %     resizing
+        xmul = 1 +randn(1)*resize1;%.*obsz(1,3);
+        ymul = 1 +randn(1)*resize1;%.*obsz(2,3);
+        zmul = 1 +randn(1)*resize1;%.*obsz(3,3);
+        newvert = v1.*repmat([xmul,ymul,zmul],size(v1,1), 1);
+    
+        %choose spatial location for point
+        arxyzi = arxyz(i,:);
+        edloc = [layoffset-obsz(1,1)*xmul , 0,0]; % this makes the centre 0, no matter how many layers
+        arloc = arxyzi;
+        varloc = [randn(1)*xloc,randn(1,2)*locsig];
+    
+        newloc = repmat(round(arloc + edloc+ varloc), size(v1,1),1);% this must be integer!
+    %     newloc = repmat([177.1,188,215],size(v1,1),1); 
+        verts = newvert+newloc; % fvcombovert = verts doesn't work when newloc is added here, newvert*1.2 is fine
         
-        end
+        %place a shape in space at a random location
+    %     p = patch('Vertices', eghandle.vertices+newloc, 'Faces', eghandle.faces);
+        p = patch('Vertices', verts , 'Faces', f1);
+    %     p = isosurface()
+        hold on
+    
+        % indicate the colour of the shape
+        p.FaceColor= pcol(i,:);
+        p.EdgeColor= pcol(i,:);
+    
+        %rotate the shape according to a distribution 
+        %rotate along axis
+        rotate(p, [1,0,0], rand(1)*360, newloc(1,:))
+    %     % rotate off axis
+        rotate(p, [0,1,0], randn(1)*rotsig, newloc(1,:))
+        rotate(p, [0,0,1], randn(1)*rotsig, newloc(1,:))
+            % these rotations aren't being combined into the output array!
+    
+            pverts = get(p, 'Vertices');
+            pfaces = get(p, 'Faces');
+    %     px = get(p,'XData');
+    %     py = get(p,'YData');
+    %     pz = get(p,'ZData');
+    %     pV = get(p, '')
+    
+    
+            if i == 1
+                fvcombovert = pverts;
+                fvcomboface = pfaces;
+            %     fvcomboface = f1; fvcombovert = verts; 
+            else
+                tfv = fvcombovert;
+                tff = fvcomboface;
+                ntfv = length(tfv);
+                fvcombovert = [tfv; pverts];
+                fvcomboface = [tff; pfaces+ntfv];
             
-        end
-        fv_combined.vertices =fvcombovert;
-        fv_combined.faces = fvcomboface;
-
+            end
+                
+    end
+            if lno == 1
+                Lfvcombovert = fvcombovert;
+                Lfvcomboface = fvcomboface;
+            %     fvcomboface = f1; fvcombovert = verts; 
+            else
+                tfv = Lfvcombovert;
+                tff = Lfvcomboface;
+                ntfv = length(tfv);
+                Lfvcombovert = [tfv; fvcombovert];
+                Lfvcomboface = [tff; fvcomboface+ntfv];
+            
+            end
+end % for the layers
+        fv_combined.vertices =Lfvcombovert;
+        fv_combined.faces = Lfvcomboface;
+        fvcombovert=Lfvcombovert;
+        fvcomboface=Lfvcomboface;
         % here the size of the object group
         % should be measured and returned
 x12= [max(fvcombovert(:,1)), min(fvcombovert(:,1))];
 y12= [max(fvcombovert(:,2)), min(fvcombovert(:,2))];
 z12= [max(fvcombovert(:,3)), min(fvcombovert(:,3))];
-volrec = [ceil(x12(1)-x12(2)), ceil(y12(1)-y12(2)),ceil(z12(1)-z12(2))];
+volrec = [ceil(abs(x12(1)-x12(2))), ceil(abs(y12(1)-y12(2))),ceil(abs(z12(1)-z12(2)))];
+% volrec = [2*ceil(x12(2)), ceil(y12(1)-y12(2)),ceil(z12(1)-z12(2))]; % this make sa big overestimate
 
         % neaten up the plot
 looks(gcf)
@@ -162,7 +209,7 @@ looks(gcf)
                                 %     num2str(diz*einterval*zsc); % this is the thickness
                                 %     num2str((PITCHNO*zsc)/(RADIUS*rad)); % this is the aspect ratio
                                     pitchN = PITCHNO;%round((t(end)-t(1))/pi);
-                                    twritename = strcat('hel-ar',num2str(numsh),'-r1',num2str(einterval),'-sz',num2str(rad),'-N',num2str(pitchN),'-AR',num2str(ar),'-THK',num2str(thk));
+                                    twritename = strcat('hel-ar',num2str(numsh),'-r1',num2str(einterval),'-sz',num2str(rad(1)),'-N',num2str(pitchN),'-AR',num2str(ar),'-THK',num2str(thk));
                                     twritename(twritename=='.')='_';
                             
                             % adds time-date stamp in order not to write over subsequent runs
@@ -175,7 +222,8 @@ looks(gcf)
 %                             trangstl = triangulation(fv_combined.faces,fv_combined.vertices );
                                 
                                     stlwrite(strcat(twritename,'.stl'), fvcomboface,fvcombovert);
-                                   save(strcat(twritename,'.mat'),"volrec")
+%                 volrec=box7;      % save a small box
+                                   save(strcat(twritename,'.mat'),"volrec","allvariables")
 %                                     stlwrite(strcat(twritename,'.stl'), f1,v1);                   % this works
 
                                     %                                     stlwrite(trangstl, 'eg.stl', 'binary');
@@ -234,7 +282,7 @@ function arxyz = hexray(numsh, obsz, spacer1);
             end
              arzm=[0;arzm];
              arym=[0;arym];
-            arxm = -1*ones(size(arym))*obsz(1,3)/2;%this makes the centre at 0, instead of the base
+            arxm = zeros(size(arym));%-1*ones(size(arym))*obsz(1,3)/2;%this makes the centre at 0, instead of the base
 
         end    
         arxyz = [arxm(:), arym(:), arzm(:)];
