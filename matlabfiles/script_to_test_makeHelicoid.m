@@ -11,7 +11,7 @@
 
 %now
 
-multiparticle(newhomef)
+% multiparticle(newhomef)
 %then run lumerical file with same
 %%
 homefol='C:\Users\Rox\OneDrive - University of Bristol\Documents\lumerical beb\multiparticleArrayDev\230217\Set1_RangeOfAR';PN = 3;paramset = [1, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5]; naparam = 'AR'; % this was used for the aspect ratio (single pitch length)
