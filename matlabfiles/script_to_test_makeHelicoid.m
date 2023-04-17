@@ -69,7 +69,7 @@ for i= 1:size(paramset,2)
 
 param=paramset(i);
 
-[stuff, volrec] =        multiparticle(homefol, numsh, param, PITCHNO, thk, saveon, rad, rotsig, resize1, locsig, xloc, spacer1, layers, shape, grid);
+[stuff, volrec] =        multiparticle(homefol, numsh, ar, PITCHNO, thk, saveon, rad, rotsig, resize1, locsig, xloc, spacer1, layers, shape, grid);
 % [fv_combined, volrec] = multiparticle(homefol,numsh, ar, PITCHNO, thk,  saveon, rad, rotsig, resize1,locsig, xloc, spacer1, layers, shape, grid)
 
 end
