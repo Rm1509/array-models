@@ -5,7 +5,7 @@ function [f1,v1] = makerod(ar, thk, homefol, saveon, r, einterval, options )
 %     einterval=0.05;
 %     r=100;
 %     saveon=0;
-
+inner = 0;
     length=r*ar;
     reso= 1/einterval; 
     

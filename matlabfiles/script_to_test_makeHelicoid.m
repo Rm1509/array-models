@@ -45,12 +45,12 @@ saveon = [0,1]; %[0,1]; %saves the multiparticle set only
 
 % paramset = ones(1,6);
 for j=1:5
-    for i= 1:size(paramset,2)
-        
-        param=paramset(i);
-        
-        [stuff, volrec] =        multiparticle(homefol, numsh, param, PITCHNO, thk, saveon, rad, rotsig, resize1, locsig, xloc, spacer1, layers, shape, grid);
-        % [fv_combined, volrec] = multiparticle(homefol,numsh, ar, PITCHNO, thk,  saveon, rad, rotsig, resize1,locsig, xloc, spacer1, layers, shape, grid)
-        
-    end
+for i= 1:size(paramset,2)
+
+param=paramset(i);
+
+[stuff, volrec] =        multiparticle(homefol, numsh, ar, PITCHNO, thk, saveon, rad, rotsig, resize1, locsig, xloc, spacer1, layers, shape, grid);
+% [fv_combined, volrec] = multiparticle(homefol,numsh, ar, PITCHNO, thk,  saveon, rad, rotsig, resize1,locsig, xloc, spacer1, layers, shape, grid)
+
+end
 end
