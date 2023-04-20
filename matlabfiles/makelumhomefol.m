@@ -1,9 +1,12 @@
 function newf = makelumhomefol (homefol)
 
-cd(homefol)
+if ~exist(homefol)
+    mkdir(homefol)
+end
+
 nom=DT4filename;
 nom=nom(4:9);
-newf=strcat(homefol, '/',nom);
+newf=fullfile(homefol, nom);
 tstat= mkdir(newf);
 if tstat==1
 cd(newf)
