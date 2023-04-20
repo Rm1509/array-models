@@ -19,10 +19,8 @@ PN = 8;paramset = [15,20,25,30,35,40]; naparam = 'sig. ang. disorder';% new angu
 
 % This file uses relative paths, so will save outputs in a 'shapes_data' directory
 % in the project root
-
-abspath = fileparts(mfilename('fullpath')); 
+abspath = fileparts(mfilename('fullpath')); % Can't run as a live document
 homefol = fullfile(abspath, '../shapes_data');
-disp(homefol);
 newhomef = makelumhomefol(homefol);
 homefol=newhomef;
 %%

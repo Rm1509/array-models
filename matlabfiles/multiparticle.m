@@ -96,7 +96,7 @@ end
 close(gcf);
 %how big is the object
 size(v1)
-obsz = obsz3(v1)
+obsz = obsz3(v1);
 
 %make an array
 if strcmp(grid,'square')
@@ -219,9 +219,9 @@ looks(gcf)
                             % saves stl file to homefol
                                     cd(strcat(homefol,'/matfiles'))
                             %         FV1 = triangulation(f1,v1);
-%                             trangstl = triangulation(fv_combined.faces,fv_combined.vertices );
+                                    trangstl = triangulation(fv_combined.faces,fv_combined.vertices );
                                 
-                                    stlwrite(strcat(twritename,'.stl'), fvcomboface,fvcombovert);
+                                    stlwrite(trangstl, strcat(twritename,'.stl'));
 %                 volrec=box7;      % save a small box
                                    save(strcat(twritename,'.mat'),"volrec","allvariables")
 %                                     stlwrite(strcat(twritename,'.stl'), f1,v1);                   % this works
